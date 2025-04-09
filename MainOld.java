@@ -1,4 +1,4 @@
-public class Main {
+public class MainOld {
     public static void main(String[] args) {
         int numberOfThreads = 5;
         Thread[] threads = new Thread[numberOfThreads]; // Tableau pour garder une référence à tous les threads
@@ -19,7 +19,7 @@ public class Main {
             }
         }
         
-        Runnable reduce = new Reduce(1);
+        Runnable reduce = new Reducer(1);
         Thread reducer = new Thread(reduce);
         reducer.start();
         try {
