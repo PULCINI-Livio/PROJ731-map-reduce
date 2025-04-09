@@ -6,7 +6,7 @@ public class Mapper {
         Map<String, Integer> wordCount = new HashMap<>();
         String[] words = input.split("\\s+");
         for (String word : words) {
-            word = word.toLowerCase().replaceAll("[^a-z]", "");
+            word = word.toLowerCase();
             if (!word.isEmpty()) {
                 wordCount.put(word, wordCount.getOrDefault(word, 0) + 1);
             }
