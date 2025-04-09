@@ -5,7 +5,7 @@ import java.util.Map;
 public class Main {
     public static void main(String[] args) {
         String filepath = "data/rousseau.txt";
-        String outputFile = "resultat_rousseau.txt";
+        String outputFile = "output/resultat_MapReduce.txt";
 
         try {
             List<Map.Entry<String, Integer>> result = MapReduce.mapReduce(filepath);
