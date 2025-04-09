@@ -4,12 +4,15 @@ import java.util.HashMap;
 public class Mapper {
     public static Map<String, Integer> map(String input) {
         Map<String, Integer> wordCount = new HashMap<>();
-        String[] words = input.split("\\s+");
-        for (String word : words) {
-            word = word.toLowerCase();
-            if (!word.isEmpty()) {
-                wordCount.put(word, wordCount.getOrDefault(word, 0) + 1);
+        String[] tokens = input.split("(?<=\\p{Punct})|(?=\\p{Punct})|\\s+");
+        
+        for (String token : tokens) {
+            token = token.toLowerCase().trim(); // Convertir en minuscules et supprimer les espaces
+            
+            if (!token.isEmpty()) { // Ignorer les chaînes vides
+                wordCount.put(token, wordCount.getOrDefault(token, 0) + 1);
             }
+            
         }
         return wordCount;
     }
