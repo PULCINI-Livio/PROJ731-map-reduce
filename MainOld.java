@@ -5,7 +5,7 @@ public class MainOld {
         
         // Lancer tous les threads
         for (int i = 0; i < numberOfThreads; i++) {
-            Runnable mapper = new Mapper(i);
+            Runnable mapper = new MapperOld(i);
             threads[i] = new Thread(mapper);
             threads[i].start();  // Démarrer chaque thread
         }
@@ -19,7 +19,7 @@ public class MainOld {
             }
         }
         
-        Runnable reduce = new Reducer(1);
+        Runnable reduce = new ReducerOld(1);
         Thread reducer = new Thread(reduce);
         reducer.start();
         try {

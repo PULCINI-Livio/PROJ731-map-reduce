@@ -1,7 +1,7 @@
-public class Reducer implements Runnable{
+public class ReducerOld implements Runnable{
     private int threadNumber;
 
-    public Reducer(int threadNumber) {
+    public ReducerOld(int threadNumber) {
         this.threadNumber = threadNumber;
     }
 

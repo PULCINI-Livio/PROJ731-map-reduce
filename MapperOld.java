@@ -1,8 +1,8 @@
-public class Mapper implements Runnable{
+public class MapperOld implements Runnable{
     private volatile int value;
     private int threadNumber;
 
-    public Mapper(int threadNumber) {
+    public MapperOld(int threadNumber) {
         this.threadNumber = threadNumber;
     }
 
