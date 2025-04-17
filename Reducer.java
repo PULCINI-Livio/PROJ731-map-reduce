@@ -1,8 +1,4 @@
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.*;
 
 public class Reducer {
     public static List<Map.Entry<String, Integer>> reduce(Map<String, List<Integer>> grouped) {
