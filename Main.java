@@ -13,7 +13,7 @@ public class Main {
             List<Map.Entry<String, Integer>> result = MapReduce.mapReduce(filepath);
 
             long endTime = System.nanoTime(); // ⏱ Fin du chronométrage
-            double durationInSeconds = (endTime - startTime) / 1_000_000_000.0;
+            long duration = (endTime - startTime) / 1_000_000; // Convertir en millisecondes
 
             // Affichage des résultats
             /*for (Map.Entry<String, Integer> entry : result) {
@@ -22,7 +22,8 @@ public class Main {
 
             ResultWriter.writeToFile(result, outputFile);
 
-            System.out.printf("Temps total de traitement : %.3f secondes%n", durationInSeconds);
+            // Afficher le temps d'exécution
+            System.out.println("Temps d'exécution du MapReduce : " + duration + " ms");
 
         } catch (FileNotFoundException e) {
             System.err.println("Error: The file " + filepath + " was not found.");
