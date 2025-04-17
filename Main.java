@@ -8,7 +8,12 @@ public class Main {
         String outputFile = "output/resultat_MapReduce.txt";
 
         try {
+            long startTime = System.nanoTime(); // Capturer le temps de début
+
             List<Map.Entry<String, Integer>> result = MapReduce.mapReduce(filepath);
+
+            long endTime = System.nanoTime(); // Capturer le temps de fin
+            long duration = (endTime - startTime) / 1_000_000; // Convertir en millisecondes
 
             // Affichage dans la console (optionnel)
             for (Map.Entry<String, Integer> entry : result) {
@@ -17,6 +22,9 @@ public class Main {
 
             // Sauvegarde dans un fichier texte
             ResultWriter.writeToFile(result, outputFile);
+
+            // Afficher le temps d'exécution
+            System.out.println("Temps d'exécution du MapReduce : " + duration + " ms");
 
         } catch (FileNotFoundException e) {
             System.err.println("Error: The file " + filepath + " was not found.");
