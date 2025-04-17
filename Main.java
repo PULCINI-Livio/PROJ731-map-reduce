@@ -7,18 +7,19 @@ public class Main {
         String filepath = "data/rousseau.txt";
         String outputFile = "output/resultat_MapReduce.txt";
 
+        long startTime = System.nanoTime(); // ⏱ Début du chronométrage
+
         try {
-            long startTime = System.nanoTime(); // Capturer le temps de début
 
             List<Map.Entry<String, Integer>> result = MapReduce.mapReduce(filepath);
 
-            long endTime = System.nanoTime(); // Capturer le temps de fin
+            long endTime = System.nanoTime(); // ⏱ Fin du chronométrage
             long duration = (endTime - startTime) / 1_000_000; // Convertir en millisecondes
 
             // Affichage dans la console (optionnel)
-            for (Map.Entry<String, Integer> entry : result) {
+            /*for (Map.Entry<String, Integer> entry : result) {
                 System.out.println(entry.getKey() + ": " + entry.getValue());
-            }
+            }*/
 
             // Sauvegarde dans un fichier texte
             ResultWriter.writeToFile(result, outputFile);
