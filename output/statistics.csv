@@ -1,4 +1,3 @@
 fileName,time,words,size
-data/fichier_1Go.txt,50101,12,1090519040
-data/LesMiserables.txt,297,3081,77374
-data/rousseau.txt,1295,59942,15993968
+data/rousseau.txt,1847,59942,15993968
+data/LesMiserables.txt,215,3081,77374

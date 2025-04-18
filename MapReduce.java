@@ -1,61 +1,45 @@
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.*;
+import java.io.*;
 import java.util.concurrent.*;
 
 public class MapReduce {
     private static final int NUM_THREADS = Runtime.getRuntime().availableProcessors();
-
-    public static List<Map.Entry<String, Integer>> mapReduce(String filepath) throws Exception {
-        List<String> inputs = new ArrayList<>();
-
+    
+    public static List<Map.Entry<String, Integer>> mapReduce(String filepath) throws FileNotFoundException, IOException, InterruptedException, ExecutionException {
+        ArrayList<String> inputs = new ArrayList<>();
         try (Scanner scanner = new Scanner(new File(filepath), "utf-8")) {
             while (scanner.hasNextLine()) {
                 inputs.add(scanner.nextLine());
             }
+        } catch (FileNotFoundException e) {
+            System.err.println("File not found: " + filepath);
+            throw e;
         }
 
-        // Découpage en morceaux
-        List<List<String>> chunks = splitIntoChunks(inputs, NUM_THREADS);
-
+        // Mapper : Traiter les lignes en parallèle
         ExecutorService mapPool = Executors.newFixedThreadPool(NUM_THREADS);
-        List<Future<Map<String, Integer>>> futures = new ArrayList<>();
+        List<Future<Map<String, Integer>>> mapFutures = new ArrayList<>();
 
-        for (List<String> chunk : chunks) {
-            futures.add(mapPool.submit(() -> {
-                Map<String, Integer> localMap = new HashMap<>();
-                for (String line : chunk) {
-                    Map<String, Integer> mapResult = Mapper.map(line);
-                    for (Map.Entry<String, Integer> entry : mapResult.entrySet()) {
-                        localMap.merge(entry.getKey(), entry.getValue(), Integer::sum);
-                    }
-                }
-                return localMap;
-            }));
+        for (String input : inputs) {
+            mapFutures.add(mapPool.submit(() -> Mapper.map(input)));
         }
 
-        mapPool.shutdown();
-        mapPool.awaitTermination(1, TimeUnit.MINUTES);
-
-        // Collecte des résultats du mapping
+        // Attente et collecte des résultats du map
         List<Map<String, Integer>> mapped = new ArrayList<>();
-        for (Future<Map<String, Integer>> future : futures) {
+        for (Future<Map<String, Integer>> future : mapFutures) {
             mapped.add(future.get());
         }
 
-        // Shuffle
+        // Shuffler : Regroupement des résultats
         Map<String, List<Integer>> grouped = Shuffler.shuffleAndSort(mapped);
 
-        // Réduction
-        return Reducer.reduce(grouped);
-    }
+        // Réduction : Utilisation du Reducer parallèle pour l'étape de réduction
+        List<Map.Entry<String, Integer>> result = ReducerParallel.reduce(grouped);
 
-    private static List<List<String>> splitIntoChunks(List<String> lines, int numChunks) {
-        List<List<String>> chunks = new ArrayList<>();
-        int chunkSize = (int) Math.ceil((double) lines.size() / numChunks);
-        for (int i = 0; i < lines.size(); i += chunkSize) {
-            chunks.add(lines.subList(i, Math.min(lines.size(), i + chunkSize)));
-        }
-        return chunks;
+        // Fermer le pool après utilisation
+        mapPool.shutdown();
+        mapPool.awaitTermination(1, TimeUnit.MINUTES);
+
+        return result;
     }
 }
