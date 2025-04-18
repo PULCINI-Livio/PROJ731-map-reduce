@@ -16,27 +16,44 @@ public class MapReduce {
             throw e;
         }
 
-        // Mapper : Traiter les lignes en parallèle
+        // Découper la liste en morceaux de taille "chunkSize"
+        int totalLines = inputs.size();
+        int chunkSize = (int) Math.ceil((double) totalLines / NUM_THREADS);
+
         ExecutorService mapPool = Executors.newFixedThreadPool(NUM_THREADS);
         List<Future<Map<String, Integer>>> mapFutures = new ArrayList<>();
 
-        for (String input : inputs) {
-            mapFutures.add(mapPool.submit(() -> Mapper.map(input)));
+        for (int i = 0; i < totalLines; i += chunkSize) {
+            int start = i;
+            int end = Math.min(i + chunkSize, totalLines);
+            List<String> chunk = inputs.subList(start, end);
+
+            // Chaque tâche traite un chunk complet
+            Callable<Map<String, Integer>> task = () -> {
+                Map<String, Integer> localMap = new HashMap<>();
+                for (String line : chunk) {
+                    Map<String, Integer> mappedLine = Mapper.map(line);
+                    for (Map.Entry<String, Integer> entry : mappedLine.entrySet()) {
+                        localMap.merge(entry.getKey(), entry.getValue(), Integer::sum);
+                    }
+                }
+                return localMap;
+            };
+
+            mapFutures.add(mapPool.submit(task));
         }
 
-        // Attente et collecte des résultats du map
+        // Collecte des résultats
         List<Map<String, Integer>> mapped = new ArrayList<>();
         for (Future<Map<String, Integer>> future : mapFutures) {
             mapped.add(future.get());
         }
 
-        // Shuffler : Regroupement des résultats
+        // Shuffle + Reduce
         Map<String, List<Integer>> grouped = Shuffler.shuffleAndSort(mapped);
-
-        // Réduction : Utilisation du Reducer parallèle pour l'étape de réduction
         List<Map.Entry<String, Integer>> result = ReducerParallel.reduce(grouped);
 
-        // Fermer le pool après utilisation
+        // Clean up
         mapPool.shutdown();
         mapPool.awaitTermination(1, TimeUnit.MINUTES);
 
