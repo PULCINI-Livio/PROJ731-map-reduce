@@ -1,6 +1,7 @@
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.RemoteException;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class AiguilleurImpl extends UnicastRemoteObject implements Aiguilleur {
@@ -18,5 +19,9 @@ public class AiguilleurImpl extends UnicastRemoteObject implements Aiguilleur {
         Machine machine = machines.get(rand.nextInt(machines.size()));
         System.out.println("Aiguilleur : envoi de la commande à une machine...");
         return machine.traiter(valeur);
+    }
+
+    List<Map.Entry<String, Integer>> faisDuMapReduce(String filepath) throws RemoteException {
+        
     }
 }
