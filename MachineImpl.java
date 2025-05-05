@@ -12,6 +12,10 @@ public class MachineImpl extends UnicastRemoteObject implements Machine {
         this.nom = nom;
     }
 
+    public String getNom() throws RemoteException {
+        return nom;
+    }
+
     public int traiter(int valeur) throws RemoteException {
         System.out.println("Machine " + nom + " traite la valeur " + valeur);
         return valeur * 2;

@@ -7,16 +7,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 public class AiguilleurImpl extends UnicastRemoteObject implements Aiguilleur {
 
     private List<Machine> machines;
     private Random rand;
+    private int machineIndex;
 
     public AiguilleurImpl(List<Machine> machines) throws RemoteException {
         super();
         this.machines = machines;
         this.rand = new Random();
+        this.machineIndex = 0;
     }
 
     public int dirigerCommande(int valeur) throws RemoteException {
@@ -25,48 +31,68 @@ public class AiguilleurImpl extends UnicastRemoteObject implements Aiguilleur {
         return machine.traiter(valeur);
     }
 
-    public List<Map.Entry<String, Integer>> faisDuMapReduce(String filepath) throws FileNotFoundException, RemoteException {
-        // On sépare en chunks (liste de liste de string)
+    public List<MotOccurence> faisDuMapReduce(String filepath) throws RemoteException, FileNotFoundException {
         ArrayList<List<String>> chunks = prepareTexte(filepath);
-        
         List<Map<String, Integer>> mapRes = new ArrayList<>();
 
+        // Créer un pool de threads avec ExecutorService pour exécuter les tâches en parallèle
+        ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(machines.size());
+
+        // Liste de futures pour récupérer les résultats des tâches
+        List<Future<List<Map<String, Integer>>>> futures = new ArrayList<>();
+
+        // Pour chaque chunk, créer un callable qui sera exécuté dans un thread séparé
         for (List<String> chunk : chunks) {
-            Machine machine = machines.get(rand.nextInt(machines.size()));
-            List<Map<String, Integer>> allMap  = machine.multiMachinesMap(chunk);
-            for (Map<String, Integer> eachMap : allMap ) {
-                mapRes.add(eachMap);
+            // Utiliser l'index cyclique pour distribuer les chunks aux machines
+            Machine machine = machines.get(machineIndex);
+            System.out.println("La machine " + machine.getNom() + " travaille...");
+
+            // Créer un callable pour chaque tâche à exécuter
+            Callable<List<Map<String, Integer>>> task = () -> {
+                return machine.multiMachinesMap(chunk);
+            };
+
+            // Soumettre le callable au pool de threads
+            futures.add(executor.submit(task));
+
+            // Passer à la machine suivante (cyclique)
+            machineIndex = (machineIndex + 1) % machines.size();
+        }
+
+        // Récupérer les résultats des futures
+        for (Future<List<Map<String, Integer>>> future : futures) {
+            try {
+                List<Map<String, Integer>> allMap = future.get(); // Attendre le résultat
+                mapRes.addAll(allMap);
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
             }
         }
 
-        // Shuffler : Regroupement des résultats
+        // Regrouper les résultats par clé
         Map<String, List<Integer>> grouped = Shuffler.shuffleAndSort(mapRes);
 
-        // Réduction : Utilisation du Reducer parallèle pour l'étape de réduction
-        List<Map.Entry<String, Integer>> result = Reducer.reduce(grouped);
-        
+        // Réduction des résultats
+        List<Map.Entry<String, Integer>> reduced = Reducer.reduce(grouped);
+
+        // Conversion vers objets sérialisables
+        List<MotOccurence> result = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : reduced) {
+            result.add(new MotOccurence(entry.getKey(), entry.getValue()));
+        }
+
+        // Arrêter le pool de threads
+        executor.shutdown();
+
         return result;
     }
 
-    /*
-     * Prend en entrée le chemin du fichier .txt
-     * 
-     * Retourne une liste de chunks qui sont des listes de string prêtes à etre envoyé aux machines
-     */
-    public ArrayList<List<String>> prepareTexte(String filepath) throws FileNotFoundException, RemoteException{
-        // Decoupage du fichier en liste de string
+    public ArrayList<List<String>> prepareTexte(String filepath) throws RemoteException, FileNotFoundException {
         ArrayList<String> texte = cutter(filepath);
-        // Découpage de la liste de string en plusieurs chunks
-        ArrayList<List<String>> res = chunker(texte);
-        return res;
+        return chunker(texte);
     }
 
-    /*
-     * Prend en entrée le chemin du fichier .txt
-     * 
-     * Retourne la liste de string qui correspond aux lignes du fichier .txt
-     */
-    public ArrayList<String> cutter(String filepath) throws FileNotFoundException{
+    public ArrayList<String> cutter(String filepath) throws RemoteException, FileNotFoundException {
         ArrayList<String> res = new ArrayList<>();
         try (Scanner scanner = new Scanner(new File(filepath), "utf-8")) {
             while (scanner.hasNextLine()) {
@@ -79,24 +105,14 @@ public class AiguilleurImpl extends UnicastRemoteObject implements Aiguilleur {
         return res;
     }
 
-
-    /*
-     * Prend en entrée la liste de string qui correspond aux lignes du fichier .txt
-     * 
-     * Retourne une liste de chunks qui sont des listes de string
-     */
     public ArrayList<List<String>> chunker(ArrayList<String> inputs) throws RemoteException {
-        // Découper la liste en morceaux de taille "chunkSize"
         int totalLines = inputs.size();
         int chunkSize = (int) Math.ceil((double) totalLines / machines.size());
 
         ArrayList<List<String>> chunks = new ArrayList<>();
-
         for (int i = 0; i < totalLines; i += chunkSize) {
-            int start = i;
             int end = Math.min(i + chunkSize, totalLines);
-            List<String> chunk = inputs.subList(start, end);
-            chunks.add(chunk);
+            chunks.add(new ArrayList<>(inputs.subList(i, end)));
         }
         return chunks;
     }

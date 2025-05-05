@@ -16,7 +16,7 @@ public class ServeurPrincipal {
             Aiguilleur aiguilleur = new AiguilleurImpl(machines);
             registry.rebind("AiguilleurService", aiguilleur);
 
-            System.out.println("Serveur prêt avec 3 machines !");
+            System.out.println("Serveur prêt avec n machines !");
         } catch (Exception e) {
             e.printStackTrace();
         }
