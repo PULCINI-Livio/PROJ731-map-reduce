@@ -1,2 +1,3 @@
 *.class
 data/Codes.txt
+output/*
