@@ -3,20 +3,31 @@ import java.util.List;
 import java.util.Map;
 
 public class Main {
+
+    // Tester avec les multithreads
     public static void main(String[] args) {
-        String filepath = "data/rousseau.txt";
+        String filepath = "data/Codes.txt";
         String outputFile = "output/resultat_MapReduce.txt";
 
+        long startTime = System.nanoTime(); // ⏱ Début du chronométrage
+
         try {
+
             List<Map.Entry<String, Integer>> result = MapReduce.mapReduce(filepath);
 
+            long endTime = System.nanoTime(); // ⏱ Fin du chronométrage
+            long duration = (endTime - startTime) / 1_000_000; // Convertir en millisecondes
+
             // Affichage dans la console (optionnel)
-            for (Map.Entry<String, Integer> entry : result) {
+            /*for (Map.Entry<String, Integer> entry : result) {
                 System.out.println(entry.getKey() + ": " + entry.getValue());
-            }
+            }*/
 
             // Sauvegarde dans un fichier texte
             ResultWriter.writeToFile(result, outputFile);
+
+            // Afficher le temps d'exécution
+            System.out.println("Temps d'exécution du MapReduce : " + duration + " ms");
 
         } catch (FileNotFoundException e) {
             System.err.println("Error: The file " + filepath + " was not found.");
