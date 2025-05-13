@@ -1,3 +1,8 @@
 fileName,time,words,size
 data/rousseau.txt,1847,59942,15993968
 data/LesMiserables.txt,215,3081,77374
+data/rousseau.txt,3121,59942,15993968
+data/Codes.txt,12559,57693,151374552
+data/Codes.txt,8608,57693,151374552
+data/Codes.txt,9203,57693,151374552
+data/fichier_1Go.txt,88917,12,1090519040
