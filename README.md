@@ -9,3 +9,7 @@ Dans le fichier ```Main.java```, modifier la ligne 8, ```String filepath = "data
 Exécuter le fichier ```Main.java```
 
 Le fichier ```file_generator.py``` permet de générer un fichier de 1Go composé de très peu de mots différents (une phrase répétée en boucle)
+
+## Statistiques
+
+Pour afficher des statistiques, exécuter le fichier ```plot_stats.py```.
