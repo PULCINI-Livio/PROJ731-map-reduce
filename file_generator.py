@@ -11,4 +11,4 @@ def generate_large_txt_file(file_path, target_size_gb=1):
     print(f"Fichier généré : {file_path} (~{target_size_gb} Go)")
 
 # Utilisation
-generate_large_txt_file("fichier_1Go.txt")
+generate_large_txt_file("data/fichier_1Go.txt")
