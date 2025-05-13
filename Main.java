@@ -5,17 +5,17 @@ import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
-        String filepath = "data/rousseau.txt";
+        String filepath = "data/fichier_1Go.txt";
         String outputFile = "output/resultat_MapReduce.txt";
         String statsCSV = "output/statistics.csv";
 
-        long startTime = System.nanoTime(); // ⏱ Début du chronométrage
+        long startTime = System.nanoTime(); //   Début du chronométrage
 
         try {
             // MapReduce
             List<Map.Entry<String, Integer>> result = MapReduce.mapReduce(filepath);
 
-            long endTime = System.nanoTime(); // ⏱ Fin
+            long endTime = System.nanoTime(); //   Fin
             long duration = (endTime - startTime) / 1_000_000; // en ms
             int distinctWords = result.size();
 
@@ -51,7 +51,7 @@ public class Main {
             System.out.println("Taille du fichier : " + fileSize + " octets");
 
         } catch (FileNotFoundException e) {
-            System.err.println("Erreur : fichier non trouvé → " + filepath);
+            System.err.println("Erreur : fichier non trouvé   " + filepath);
         } catch (Exception e) {
             System.err.println("Erreur inattendue : " + e.getMessage());
         }
